@@ -70,8 +70,8 @@ hold on
 
 
 % Find max peak in Hough Space
-max_val=max(C(:))             			% Find value of max peak
-[row, col]=find(C == max_val)				 % Find coordinates of top
+max_val=max(C(:))    ;         			% Find value of max peak
+[row, col]=find(C == max_val)	;			 % Find coordinates of top
 C(:,max(col-15,1):min(col+15,length(Th_axis)))=0; % Clear current peak   
 
 PlotHoughLine(R_axis(row), Th_axis(col),'g-');  
@@ -143,7 +143,7 @@ for n=1:nLen
 
 	% ADD MISSING CODE BELOW   
 	% Compute prediction
-    Pp=F*Pe*F.'+G*Q*G.'*T;     
+    Pp=F*Pe*F.'+G.'*Q*G;     
  
     ind_scan=find(abs(time_tim55-time_ad_gyro(n))<=0.02);
     nAccepts=0;
@@ -186,9 +186,9 @@ for n=1:nLen
             for k=1:3             			
 				% ADD MISSING CODE BELOW   
                 
-                max_val= max(C(:))  % find max value of peak
+                max_val= max(C(:));  % find max value of peak
                 %max_ind=   			% find index of max peak
-                [row col]= find(C == max_val) % find row and column of max peak
+                [row col]= find(C == max_val); % find row and column of max peak
  
                % Plot observations with read dashed line
                 figure(3);
@@ -200,8 +200,9 @@ for n=1:nLen
                 C(:,max(col-15,1):min(col+15,length(Th_axis)))=0;
                 
 				%% Max peak is our observation
-				% ADD MISSING CODE BELOW   
-                Z=[];
+				% ADD MISSING CODE BELOW  
+
+                Z=[R_axis(row); Th_axis(col)];
                 
                 % Compute innovation vector
 				% ADD MISSING CODE BELOW   
@@ -214,13 +215,16 @@ for n=1:nLen
                 % Compute Mahalanobis distance
 				% ADD MISSING CODE BELOW   
                 invS = inv(S);
-                d_sqr = vInno^2;
+                d_sqr = vInno.'*invS*vInno;
                 
                 % Chi squre test for observation
 				% ADD MISSING CODE BELOW   
-                bAcceptObservation = ...;              % add expression to accept observaton 95% Chi^2-test. Two degrees of freedom      
+                bAcceptObservation = d_sqr<5.99;          % add expression to accept observaton 95% Chi^2-test. Two degrees of freedom      
                 
                 % Log and store innovation vector, Mahalanobis distance and innovation covariance
+                size(vInno)
+                size(sqrt(diag(S)))
+                size(t(n))
                 vInnoLog=[vInno; sqrt(diag(S));t(n)];
                 mInnovationLog(:,n)=vInnoLog;
                 mDsqrLog(:,n)=[t(n);d_sqr];
@@ -231,14 +235,15 @@ for n=1:nLen
         end
         last_ind = ind_scan(1);
     end
+    
     if(bAcceptObservation>0)
       % add equations for accept
       % Compute new estimate when accepted observation
     	% ADD MISSING CODE BELOW   
-        K=...;                    
-        Xe=...;
+        K= Pp*H.'*(H*Pp*H.'+ R);                    
+        Xe = Xp + K*(Z-H*Xp);
         I=eye(size(Xe,1));
-        Pe=...;
+        Pe=(I - K*H)*Pp;
         
         % Log Kalman gain
         mKlog(:,n)=[t(n);diag(K)];
@@ -248,8 +253,8 @@ for n=1:nLen
      else
 		% Compute new estimate for rejected observation
     	% ADD MISSING CODE BELOW  
-		Pe=...;
-		Xe=...;
+		Pe=Pp;
+		Xe=Xp;
 		
 		% Log Kalman Gain
         mKlog(:,n)=[t(n);0;0];
@@ -259,6 +264,7 @@ for n=1:nLen
     % Log, store, state vector estimate and covariance for state estimate
     mXlog(:,n)=Xe;
     mPlog(:,n)=sqrt(diag(Pe));
+    
 end
 
 figure
