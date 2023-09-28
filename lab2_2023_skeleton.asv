@@ -74,7 +74,7 @@ max_val=max(C(:))    ;         			% Find value of max peak
 [row, col]=find(C == max_val);			 % Find coordinates of top
 C(:,max(col-15,1):min(col+15,length(Th_axis)))=0; % Clear current peak   
 
-PlotHoughLine(R_axis(row), Th_axis(col),'g-');  
+%PlotHoughLine(R_axis(row), Th_axis(col),'g-');  
 
 %
 % Initiate Kalman Filter vectors and matrixes
@@ -104,21 +104,25 @@ GQ=[std_ad_gyro^2];
  
 % Initiate covariances for current start estimate
 % Do not touch values in covariance before you get the Kalman Filter running
-Pe=[0.4^2 0 0; 
-	0 (3*pi/180)^2 0;
-	0 0 0.01^2];     %
+% Pe=[0.4^2 0 0; 
+% 	0 (3*pi/180)^2 0;
+% 	0 0 0.01^2];     %
 
 % Observation noise
 R=[0.2^2 0;
 	0 (3*pi/180)^2];  % Observation noise
 
+
+
 % Process noise	
-Q=[0.05^2 0 0; %   change prosess noise on Q
-   0 (0.1*pi/180)^2 0;
+% Q=[0.05^2 0 0; %   change prosess noise on Q
+%    0 (0.01*pi/180)^2 0;
+%    0 0 0.001^2];
+
+Q=[1 0 0; %   change prosess noise on Q
+   0 1 0;
    0 0 0.001^2];
 
-
-% Initiate log matrises
 nLen=1500;                         % Loop through this number of gyro measurements
 mXlog=zeros(length(Xe),nLen);
 mPlog=mXlog;
@@ -183,7 +187,7 @@ for n=1:nLen
             end
             
             % search for three significant Hough peaks
-            for k=1:3             			
+            for k=1:3          			
 				% ADD MISSING CODE BELOW   
                 
                 max_val= max(C(:));  % find max value of peak
@@ -216,7 +220,6 @@ for n=1:nLen
 				% ADD MISSING CODE BELOW   
                 invS = inv(S);
                 d_sqr = vInno.'*invS*vInno;
-                
                 % Chi squre test for observation
 				% ADD MISSING CODE BELOW   
                 bAcceptObservation = d_sqr<5.99;          % add expression to accept observaton 95% Chi^2-test. Two degrees of freedom      
