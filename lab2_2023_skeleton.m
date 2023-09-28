@@ -74,7 +74,7 @@ max_val=max(C(:))    ;         			% Find value of max peak
 [row, col]=find(C == max_val)	;			 % Find coordinates of top
 C(:,max(col-15,1):min(col+15,length(Th_axis)))=0; % Clear current peak   
 
-PlotHoughLine(R_axis(row), Th_axis(col),'g-');  
+%PlotHoughLine(R_axis(row), Th_axis(col),'g-');  
 
 %
 % Initiate Kalman Filter vectors and matrixes
@@ -112,9 +112,11 @@ Pe=[0.4^2 0 0;
 R=[0.2^2 0;
 	0 (3*pi/180)^2];  % Observation noise
 
+
+
 % Process noise	
-Q=[0.05^2 0 0; %   change prosess noise on Q
-   0 (0.1*pi/180)^2 0;
+Q=[5^2 0 0; %   change prosess noise on Q
+   0 (0.01*pi/180)^2 0;
    0 0 0.001^2];
 
 
