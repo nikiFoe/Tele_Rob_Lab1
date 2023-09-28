@@ -21,13 +21,13 @@ log_tim55=load('log_tim55_5.txt');		% load laser range readings
 
 time_ad_gyro = log_ad_gyro(:,2);		% get time stamps for gyro readings
 time_tim55= log_tim55(:,2);				% get time stamps for laser range readings
-time_begin_ad=min(time_ad_gyro);         % Get first time stamp
+time_begin_ad=min(time_ad_gyro);        % Get first time stamp
 time_begin_tim55=min(time_tim55);
 time_begin = min([time_begin_ad time_begin_tim55]);
 rate_ad=log_ad_gyro(:,3)*pi/180;		% Get vector with rate gyro readings
 
-std_ad_gyro = std(rate_ad(1:400));       % Compute roughly std 
-mean_ad_gyro= mean(rate_ad(1:400));      % Compute mean roughly
+std_ad_gyro = std(rate_ad(1:400));      % Compute roughly std 
+mean_ad_gyro= mean(rate_ad(1:400));     % Compute mean roughly
 
 heading_ad=log_ad_gyro(:,4);
 
@@ -71,7 +71,7 @@ hold on
 
 % Find max peak in Hough Space
 max_val=max(C(:))    ;         			% Find value of max peak
-[row, col]=find(C == max_val)	;			 % Find coordinates of top
+[row, col]=find(C == max_val);			 % Find coordinates of top
 C(:,max(col-15,1):min(col+15,length(Th_axis)))=0; % Clear current peak   
 
 PlotHoughLine(R_axis(row), Th_axis(col),'g-');  
@@ -88,12 +88,12 @@ Xe=[R_axis(row); 			% range estimate
 T=0.01;   % Run Kalman filter in 100 Hz
 
 % Initiate state transition matrix
-F= [1 0 0;   % 
+F= [1 0 0;% 
 	0 1 T;
 	0 0 1];   
 	
 % Observation matrix
-H=[1 0 0;   % 
+H=[1 0 0;% 
 	0 1 0];                   % 
 
 % Input vector
@@ -216,15 +216,11 @@ for n=1:nLen
 				% ADD MISSING CODE BELOW   
                 invS = inv(S);
                 d_sqr = vInno.'*invS*vInno;
-                
                 % Chi squre test for observation
 				% ADD MISSING CODE BELOW   
                 bAcceptObservation = d_sqr<5.99;          % add expression to accept observaton 95% Chi^2-test. Two degrees of freedom      
                 
                 % Log and store innovation vector, Mahalanobis distance and innovation covariance
-                size(vInno)
-                size(sqrt(diag(S)))
-                size(t(n))
                 vInnoLog=[vInno; sqrt(diag(S));t(n)];
                 mInnovationLog(:,n)=vInnoLog;
                 mDsqrLog(:,n)=[t(n);d_sqr];
