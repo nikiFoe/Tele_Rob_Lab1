@@ -104,9 +104,9 @@ GQ=[std_ad_gyro^2];
  
 % Initiate covariances for current start estimate
 % Do not touch values in covariance before you get the Kalman Filter running
-% Pe=[0.4^2 0 0; 
-% 	0 (3*pi/180)^2 0;
-% 	0 0 0.01^2];     %
+ Pe=[0.004^2 0 0; 
+ 	0 (0.3*pi/180)^2 0;
+	0 0 0.001^2];     %
 
 % Observation noise
 R=[0.2^2 0;
@@ -115,13 +115,11 @@ R=[0.2^2 0;
 
 
 % Process noise	
-% Q=[0.05^2 0 0; %   change prosess noise on Q
-%    0 (0.01*pi/180)^2 0;
-%    0 0 0.001^2];
+ Q=[6.9686*10^(-5) 0 0; %   change prosess noise on Q
+    0 (0.001*pi/180)^2 0;
+    0 0 0.001^2];
 
-Q=[1 0 0; %   change prosess noise on Q
-   0 1 0;
-   0 0 0.001^2];
+
 
 nLen=1500;                         % Loop through this number of gyro measurements
 mXlog=zeros(length(Xe),nLen);
@@ -129,7 +127,8 @@ mPlog=mXlog;
 mKlog=zeros(3,nLen);
 mDsqrLog = zeros(2,nLen);
 mInnovationLog = zeros(1+2*length(H*Xe),nLen);
-
+stateMeassureLog = zeros(1,nLen);
+stateMeassureTHLog = zeros(1,nLen);
 
 bAcceptObservation=0;
 last_ind=0;
@@ -147,8 +146,9 @@ for n=1:nLen
 
 	% ADD MISSING CODE BELOW   
 	% Compute prediction
-    Pp=F*Pe*F.'+G.'*Q*G;     
- 
+    Pp=F*Pe*F.'+G.'*GQ*G +Q ;     
+    stateMeassureLog(:,n) = [R_axis(row)];
+    stateMeassureTHLog(:,n) = [Th_axis(row)]; 
     ind_scan=find(abs(time_tim55-time_ad_gyro(n))<=0.02);
     nAccepts=0;
     if(length(ind_scan)>0)
@@ -180,7 +180,7 @@ for n=1:nLen
             PlotHoughLine(Zp(1), Zp(2),'g-');
             
             [C Th_axis R_axis]=RWhough(vAngles,vRanges,100,0.05);
-           
+            
             if(bPlotHough)
                 figure(2);
                 surf(Th_axis*180/pi,R_axis,C);
@@ -193,13 +193,13 @@ for n=1:nLen
                 max_val= max(C(:));  % find max value of peak
                 %max_ind=   			% find index of max peak
                 [row col]= find(C == max_val); % find row and column of max peak
- 
+                
                % Plot observations with read dashed line
                 figure(3);
                 hold on
                 PlotHoughLine(R_axis(row), Th_axis(col),'--r');
                 drawnow
-                  
+                
                 % Remove found max peak
                 C(:,max(col-15,1):min(col+15,length(Th_axis)))=0;
                 
@@ -226,6 +226,7 @@ for n=1:nLen
                 
                 % Log and store innovation vector, Mahalanobis distance and innovation covariance
                 vInnoLog=[vInno; sqrt(diag(S));t(n)];
+                
                 mInnovationLog(:,n)=vInnoLog;
                 mDsqrLog(:,n)=[t(n);d_sqr];
                 if(bAcceptObservation)
@@ -249,7 +250,7 @@ for n=1:nLen
         mKlog(:,n)=[t(n);diag(K)];
 		
 		nAccepts = nAccepts + 1;		 %  Valid observation found in scan
-        disp(sprintf('Accepted observations %d\n',nAccepts));
+        %disp(sprintf('Accepted observations %d\n',nAccepts));
      else
 		% Compute new estimate for rejected observation
     	% ADD MISSING CODE BELOW  
